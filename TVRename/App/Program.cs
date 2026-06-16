@@ -11,6 +11,7 @@ using System;
 using System.Linq;
 using System.Net.Http;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -42,6 +43,7 @@ public static class Program
 
         try
         {
+            PreloadCefNativeDlls();
             AppDomain.CurrentDomain.AssemblyResolve += OnAssemblyResolve;
             AppDomain.CurrentDomain.UnhandledException += GlobalExceptionHandler;
             Application.ThreadException += delegate (object _, ThreadExceptionEventArgs eventArgs)
@@ -147,6 +149,32 @@ public static class Program
         {
             Logger.Info($"Received {args.ToCsv()}, sending to the application.");
             TvRename.ProcessReceivedArgs(args);
+        }
+    }
+
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern IntPtr LoadLibrary(string lpFileName);
+
+    // .NET 8 uses restricted DLL search mode (LoadLibraryEx flags) that excludes the app root.
+    // Preload chrome_elf.dll and libcef.dll by full path so they're already in the process
+    // module list when CefSharp.Core.Runtime.dll (loaded from x64\) resolves its imports.
+    private static void PreloadCefNativeDlls()
+    {
+        string appDir = AppDomain.CurrentDomain.SetupInformation.ApplicationBase!;
+        string arch = Environment.Is64BitProcess ? "x64" : "x86";
+        string nativeDir = System.IO.Path.Combine(appDir, "runtimes", $"win-{arch}", "native");
+
+        foreach (string dll in new[] { "chrome_elf.dll", "libcef.dll" })
+        {
+            string fullPath = System.IO.Path.Combine(nativeDir, dll);
+            if (!System.IO.File.Exists(fullPath))
+            {
+                fullPath = System.IO.Path.Combine(appDir, dll);
+            }
+            if (System.IO.File.Exists(fullPath))
+            {
+                LoadLibrary(fullPath);
+            }
         }
     }
 

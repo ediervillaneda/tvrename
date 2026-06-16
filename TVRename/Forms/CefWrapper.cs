@@ -53,10 +53,7 @@ public class CefWrapper
             settings.CachePath = PathManager.CefCachePath();
             settings.LogFile = PathManager.CefLogFile();
 
-            if (!Helpers.InDebug())
-            {
-                SetArchitecturePaths(settings);
-            }
+            SetArchitecturePaths(settings);
             Cef.Initialize(settings);
         }
         catch (System.IO.FileNotFoundException fex)
@@ -132,15 +129,12 @@ public class CefWrapper
     {
         try
         {
-            if (!Helpers.InDebug())
-            {
-                Logger.Info($"Checking for CEF dependencies {architectureSpecificResourcesDirPath}");
-                DependencyChecker.AssertAllDependenciesPresent(
-                    browserSubProcessPath: architectureSpecificBrowserPath,
-                    localesDirPath: architectureSpecificLocalesDirPath,
-                    resourcesDirPath: architectureSpecificResourcesDirPath
-                );
-            }
+            Logger.Info($"Checking for CEF dependencies {architectureSpecificResourcesDirPath}");
+            DependencyChecker.AssertAllDependenciesPresent(
+                browserSubProcessPath: architectureSpecificBrowserPath,
+                localesDirPath: architectureSpecificLocalesDirPath,
+                resourcesDirPath: architectureSpecificResourcesDirPath
+            );
             Logger.Info("Dependencies all found");
             if (showUi)
             {
