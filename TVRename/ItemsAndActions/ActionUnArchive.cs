@@ -8,11 +8,6 @@
 
 using Alphaleonis.Win32.Filesystem;
 using SharpCompress.Archives;
-using SharpCompress.Archives.GZip;
-using SharpCompress.Archives.Rar;
-using SharpCompress.Archives.SevenZip;
-using SharpCompress.Archives.Tar;
-using SharpCompress.Archives.Zip;
 using SharpCompress.Common;
 using System;
 using System.Threading;
@@ -140,23 +135,7 @@ public class ActionUnArchive : ActionFileOperation
     }
     private static IArchive GetArchive(FileInfo archive)
     {
-        if (archive.Name.EndsWith(".rar", StringComparison.OrdinalIgnoreCase))
-        {
-            return RarArchive.Open(archive.FullName);
-        }
-        if (archive.Name.EndsWith(".7z", StringComparison.OrdinalIgnoreCase))
-        {
-            return SevenZipArchive.Open(archive.FullName);
-        }
-        if (archive.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-        {
-            return ZipArchive.Open(archive.FullName);
-        }
-        if (archive.Name.EndsWith(".gzip", StringComparison.OrdinalIgnoreCase))
-        {
-            return GZipArchive.Open(archive.FullName);
-        }
-        return TarArchive.Open(archive.FullName);
+        return ArchiveFactory.OpenArchive(archive.FullName, null);
     }
 
     public override bool SameAs(Item o) => o is ActionUnArchive touch && touch.archiveFile == archiveFile;
