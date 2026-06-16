@@ -15,6 +15,7 @@ public partial class CannotConnectForm : Form
         Text = header;
     }
 
+    [System.Diagnostics.CodeAnalysis.AllowNull]
     public sealed override string Text
     {
         get => base.Text;

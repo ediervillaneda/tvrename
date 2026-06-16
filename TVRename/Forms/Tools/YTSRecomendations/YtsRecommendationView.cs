@@ -172,13 +172,13 @@ public partial class YtsRecommendationView : Form
             }
             else
             {
-                Add(relatedMovie.Id, new Tuple<API.YtsMovie, List<Tuple<API.YtsMovie, MovieConfiguration>>>(relatedMovie, [.. [new(ytsMovie, existingMovie)]]));
+                Add(relatedMovie.Id, new Tuple<API.YtsMovie, List<Tuple<API.YtsMovie, MovieConfiguration>>>(relatedMovie, new List<Tuple<API.YtsMovie, MovieConfiguration>> { new(ytsMovie, existingMovie) }));
             }
         }
 
         public List<YtsRecommendationRow> AsRecommendationRows(TVDoc mDoc)
         {
-            return [.. this.Select(m => new YtsRecommendationRow(m.Value.Item1, m.Value.Item2, mDoc))];
+            return this.Select(m => new YtsRecommendationRow(m.Value.Item1, m.Value.Item2, mDoc)).ToList();
         }
     }
 
