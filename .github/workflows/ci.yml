@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: ["master"]
+    paths-ignore:
+      - "*.md"
+      - ".github/FUNDING.yml"
+  pull_request:
+    branches: ["master"]
+
+jobs:
+  build:
+    name: Build
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore TVRename.sln
+
+      - name: Build
+        run: dotnet build TVRename.sln -c Release --no-restore
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: TVRename-${{ github.sha }}
+          path: TVRename/bin/Release/net8.0-windows/
+          retention-days: 3

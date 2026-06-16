@@ -1,0 +1,103 @@
+name: Release
+
+# Triggered by semver tags: 5.0.9  or  5.0.9-rc.1  (no "v" prefix, matching AppVeyor convention)
+on:
+  push:
+    tags:
+      - "[0-9]*.[0-9]*.[0-9]*"
+
+jobs:
+  release:
+    name: Build & Release
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── Parse & validate semver tag ──────────────────────────────────────────
+      - name: Parse semver tag
+        id: semver
+        shell: pwsh
+        run: |
+          $tag = "${{ github.ref_name }}"
+
+          if ($tag -notmatch '^\d+\.\d+\.\d+(-[a-zA-Z0-9][a-zA-Z0-9.]*)?$') {
+            Write-Error "Tag '$tag' is not valid semver (MAJOR.MINOR.PATCH or MAJOR.MINOR.PATCH-prerelease)"
+            exit 1
+          }
+
+          $core        = ($tag -split '-')[0]                        # 5.0.9
+          $isPrerelease = if ($tag -like '*-*') { 'true' } else { 'false' }
+
+          # Human-friendly label: "5.0.9" or "5.0.9 RC 1" / "5.0.9 Alpha 3"
+          if ($tag -like '*-*') {
+            $suffix  = ($tag -split '-', 2)[1]
+            $suffix  = (Get-Culture).TextInfo.ToTitleCase($suffix.ToLower())
+            $suffix  = $suffix -replace '([a-zA-Z]+)(\d+)', '$1 $2'
+            $friendly = "$core $suffix"
+          } else {
+            $friendly = $core
+          }
+
+          "tag=$tag"                  | Out-File -Append $env:GITHUB_OUTPUT
+          "core=$core"                | Out-File -Append $env:GITHUB_OUTPUT
+          "friendly=$friendly"        | Out-File -Append $env:GITHUB_OUTPUT
+          "prerelease=$isPrerelease"  | Out-File -Append $env:GITHUB_OUTPUT
+
+          Write-Host "tag=$tag  core=$core  friendly=$friendly  prerelease=$isPrerelease"
+
+      # ── Patch version in AssemblyInfo.cs ────────────────────────────────────
+      - name: Patch AssemblyInfo.cs
+        shell: pwsh
+        run: |
+          $core     = "${{ steps.semver.outputs.core }}"
+          $friendly = "${{ steps.semver.outputs.friendly }}"
+          $file     = "TVRename\Properties\AssemblyInfo.cs"
+
+          (Get-Content $file) `
+            -replace 'AssemblyVersion\("[^"]*"\)',              "AssemblyVersion(`"$core.0`")" `
+            -replace 'AssemblyFileVersion\("[^"]*"\)',          "AssemblyFileVersion(`"$core`")" `
+            -replace 'AssemblyInformationalVersion\("[^"]*"\)', "AssemblyInformationalVersion(`"$friendly`")" |
+          Set-Content $file
+
+          Write-Host "Patched to: AssemblyVersion=$core.0  FileVersion=$core  Informational=$friendly"
+
+      # ── Build ────────────────────────────────────────────────────────────────
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore TVRename.sln
+
+      - name: Build Release
+        run: dotnet build TVRename.sln -c Release --no-restore
+
+      # ── NSIS installer ───────────────────────────────────────────────────────
+      - name: Download NSIS DotNetChecker plugin
+        shell: pwsh
+        run: |
+          $pluginDir = "${env:ProgramFiles(x86)}\NSIS\Plugins\x86-unicode"
+          New-Item -ItemType Directory -Force $pluginDir | Out-Null
+          $base = "https://raw.githubusercontent.com/ReVolly/NsisDotNetChecker/master"
+          Invoke-WebRequest "$base/bin/DotNetChecker.dll"  -OutFile "$pluginDir\DotNetChecker.dll"
+          Invoke-WebRequest "$base/nsis/DotNetChecker.nsh" -OutFile "DotNetChecker.nsh"
+
+      - name: Build installer
+        shell: pwsh
+        run: |
+          $tag      = "${{ steps.semver.outputs.tag }}"
+          $friendly = "${{ steps.semver.outputs.friendly }}"
+          & "${env:ProgramFiles(x86)}\NSIS\makensis.exe" /WX /DVERSION="$friendly" /DTAG="$tag" Installer.nsi
+
+      # ── Publish ──────────────────────────────────────────────────────────────
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "TV Rename ${{ steps.semver.outputs.friendly }}"
+          generate_release_notes: true
+          prerelease: ${{ steps.semver.outputs.prerelease }}
+          files: TVRename-${{ steps.semver.outputs.tag }}.exe
