@@ -51,7 +51,6 @@ public class CefWrapper
             using CefSettings settings = new();
 
             settings.CachePath = PathManager.CefCachePath();
-            settings.UserDataPath = PathManager.CefCachePath();
             settings.LogFile = PathManager.CefLogFile();
 
             if (!Helpers.InDebug())
@@ -74,8 +73,6 @@ public class CefWrapper
             $"https://aka.ms/vs/17/release/{urlToDownload}".OpenUrlInBrowser();
         }
         CheckForBrowserDependencies(false);
-
-        Cef.EnableHighDPISupport();
     }
 
     public static void Shutdown()

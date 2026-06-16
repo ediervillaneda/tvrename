@@ -88,7 +88,7 @@ public class BrowserRequestHandler : IRequestHandler
         X509Certificate2Collection certificates, ISelectClientCertificateCallback callback) =>
         false;
 
-    public void OnRenderProcessTerminated(IWebBrowser browserControl, IBrowser browser, CefTerminationStatus status)
+    public void OnRenderProcessTerminated(IWebBrowser browserControl, IBrowser browser, CefTerminationStatus status, int errorCode, string errorDescription)
     {
     }
 
