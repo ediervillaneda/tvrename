@@ -87,18 +87,18 @@ public partial class UpdateNotification : Form
 
     private void NavigateTo(object sender, WebBrowserNavigatingEventArgs e)
     {
-        string url = e.Url.AbsoluteUri;
+        string url = e.Url?.AbsoluteUri ?? string.Empty;
 
         // ReSharper disable once StringLiteralTypo
         if (url.Contains(@"ieframe.dll"))
         {
-            url = e.Url.Fragment.RemoveFirstCharacter();
+            url = e.Url?.Fragment.RemoveFirstCharacter() ?? string.Empty;
         }
 
         if (url.IsWebLink())
         {
             e.Cancel = true;
-            e.Url.AbsoluteUri.OpenUrlInBrowser();
+            e.Url?.AbsoluteUri.OpenUrlInBrowser();
         }
     }
 }

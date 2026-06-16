@@ -231,8 +231,8 @@ public partial class BulkAddMovie : Form
     {
         if (e.Data is not null)
         {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            foreach (string path in files)
+            string[]? files = (string[]?)e.Data.GetData(DataFormats.FileDrop);
+            foreach (string path in files ?? [])
             {
                 try
                 {
@@ -260,8 +260,8 @@ public partial class BulkAddMovie : Form
     {
         if (e.Data is not null)
         {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            foreach (string path in files)
+            string[]? files = (string[]?)e.Data.GetData(DataFormats.FileDrop);
+            foreach (string path in files ?? [])
             {
                 try
                 {
@@ -363,7 +363,7 @@ public partial class BulkAddMovie : Form
         }
 
         foreach (PossibleNewMovie ai in lvFMNewShows.SelectedItems.Cast<ListViewItem>()
-                     .Select(lvi => (PossibleNewMovie)lvi.Tag))
+                     .Select(lvi => (PossibleNewMovie)lvi.Tag!))
         {
             TVSettings.Instance.IgnoreFolders.Add(ai.Directory.FullName.ToLower());
             engine.AddItems.Remove(ai);

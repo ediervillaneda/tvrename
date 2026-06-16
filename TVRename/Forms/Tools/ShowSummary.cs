@@ -160,7 +160,7 @@ public partial class ShowSummary : Form, IDialogParent
             }
 
             if (chkOnlyShow.Checked &&
-                !show.ShowConfiguration.ShowStatus.Equals(cmbShowStatus.SelectedItem.ToString(), StringComparison.OrdinalIgnoreCase))
+                !show.ShowConfiguration.ShowStatus.Equals(cmbShowStatus.SelectedItem?.ToString(), StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }

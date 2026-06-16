@@ -37,8 +37,8 @@ public partial class UpcomingPopup : Form
     }
     private void UpcomingPopup_Load(object sender, System.EventArgs e)
     {
-        int screenWidth = Screen.PrimaryScreen.WorkingArea.Width;
-        int screenHeight = Screen.PrimaryScreen.WorkingArea.Height;
+        int screenWidth = Screen.PrimaryScreen!.WorkingArea.Width;
+        int screenHeight = Screen.PrimaryScreen!.WorkingArea.Height;
         Left = screenWidth - Width;
         Top = screenHeight - Height;
 

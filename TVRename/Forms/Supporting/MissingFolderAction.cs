@@ -84,8 +84,8 @@ public partial class MissingFolderAction : Form
     {
         if (e.Data is not null)
         {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            foreach (string path in files)
+            string[]? files = (string[]?)e.Data.GetData(DataFormats.FileDrop);
+            foreach (string path in files ?? [])
             {
                 try
                 {

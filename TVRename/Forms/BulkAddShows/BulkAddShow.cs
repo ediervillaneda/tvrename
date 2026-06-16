@@ -257,8 +257,8 @@ public partial class BulkAddShow : Form
     {
         if (e.Data is not null)
         {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            foreach (string path in files)
+            string[]? files = (string[]?)e.Data.GetData(DataFormats.FileDrop);
+            foreach (string path in files ?? [])
             {
                 try
                 {
@@ -286,8 +286,8 @@ public partial class BulkAddShow : Form
     {
         if (e.Data is not null)
         {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            foreach (string path in files)
+            string[]? files = (string[]?)e.Data.GetData(DataFormats.FileDrop);
+            foreach (string path in files ?? [])
             {
                 try
                 {
@@ -386,7 +386,7 @@ public partial class BulkAddShow : Form
 
         foreach (ListViewItem lvi in lvFMNewShows.SelectedItems)
         {
-            PossibleNewTvShow ai = (PossibleNewTvShow)lvi.Tag;
+            PossibleNewTvShow ai = (PossibleNewTvShow)lvi.Tag!;
             engine.AddItems.Remove(ai);
         }
 
@@ -407,7 +407,7 @@ public partial class BulkAddShow : Form
         }
 
         foreach (PossibleNewTvShow ai in lvFMNewShows.SelectedItems.Cast<ListViewItem>()
-                     .Select(lvi => (PossibleNewTvShow)lvi.Tag))
+                     .Select(lvi => (PossibleNewTvShow)lvi.Tag!))
         {
             TVSettings.Instance.IgnoreFolders.Add(ai.Folder.FullName.ToLower());
             engine.AddItems.Remove(ai);

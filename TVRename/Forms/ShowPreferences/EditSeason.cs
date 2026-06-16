@@ -173,7 +173,7 @@ public partial class EditSeason : Form
             return;
         }
 
-        ShowRule sr = (ShowRule)lvRuleList.SelectedItems[0].Tag;
+        ShowRule sr = (ShowRule)lvRuleList.SelectedItems[0].Tag!;
         AddModifyRule ar = new(sr, show, ProcessedEpisodes());
         ar.ShowDialog(this); // modifies rule in-place if OK'd
         FillRuleList(false, 0);
@@ -186,7 +186,7 @@ public partial class EditSeason : Form
             return;
         }
 
-        ShowRule sr = (ShowRule)lvRuleList.SelectedItems[0].Tag;
+        ShowRule sr = (ShowRule)lvRuleList.SelectedItems[0].Tag!;
 
         workingRuleSet.Remove(sr);
         FillRuleList(false, 0);
@@ -331,7 +331,7 @@ public partial class EditSeason : Form
 
         for (int index = lvSeenEpisodes.SelectedItems.Count - 1; index >= 0; index--)
         {
-            ProcessedEpisode pe = (ProcessedEpisode)lvSeenEpisodes.SelectedItems[index].Tag;
+            ProcessedEpisode pe = (ProcessedEpisode)lvSeenEpisodes.SelectedItems[index].Tag!;
             episodesToRemoveFromSeen.Add(pe);
             lvSeenEpisodes.Items.Remove(lvSeenEpisodes.SelectedItems[index]);
         }

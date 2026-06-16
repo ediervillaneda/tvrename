@@ -191,7 +191,7 @@ public partial class UI : Form, IDialogParent
 
     private static void WaitForCefInitialised()
     {
-        WaitFor(() => CefSharp.Cef.IsInitialized, 10, "browser to initialise", true);
+        WaitFor(() => CefSharp.Cef.IsInitialized ?? false, 10, "browser to initialise", true);
     }
 
     private static void WaitFor(Func<bool> func, int maxSeconds, string textMessage, bool doLogging)
@@ -408,11 +408,11 @@ public partial class UI : Form, IDialogParent
     private void OlvAction_Dropped(object sender, OlvDropEventArgs e)
     {
         // Get a list of filenames being dragged
-        string[] files = (string[])((DataObject)e.DataObject).GetData(DataFormats.FileDrop, false);
+        string[]? files = (string[]?)((DataObject)e.DataObject).GetData(DataFormats.FileDrop, false);
 
         // Establish item in list being dragged to, and exit if no item matched
         // Check at least one file was being dragged, and that dragged-to item is a "Missing Item" item.
-        if (files.Length <= 0 || e.DropTargetItem.RowObject is not ItemMissing mi)
+        if (files is null || files.Length <= 0 || e.DropTargetItem.RowObject is not ItemMissing mi)
         {
             return;
         }
@@ -1683,11 +1683,11 @@ public partial class UI : Form, IDialogParent
     {
         if (GetUsedSearchers() == TVDoc.GetMovieSearchers())
         {
-            mDoc.SetMovieSearcher((SearchEngine)e.ClickedItem.Tag);
+            mDoc.SetMovieSearcher((SearchEngine)e.ClickedItem!.Tag!);
         }
         else
         {
-            mDoc.SetSearcher((SearchEngine)e.ClickedItem.Tag);
+            mDoc.SetSearcher((SearchEngine)e.ClickedItem!.Tag!);
         }
 
         UpdateSearchButtons();
@@ -1813,7 +1813,7 @@ public partial class UI : Form, IDialogParent
 
         int n = lvWhenToWatch.SelectedIndices[0];
 
-        ProcessedEpisode ei = (ProcessedEpisode)lvWhenToWatch.Items[n].Tag;
+        ProcessedEpisode ei = (ProcessedEpisode)lvWhenToWatch.Items[n].Tag!;
         switchToWhenOpenMyShows = ei;
 
         if (TVSettings.Instance.HideWtWSpoilers &&
@@ -1848,7 +1848,7 @@ public partial class UI : Form, IDialogParent
             return;
         }
 
-        ProcessedEpisode ei = (ProcessedEpisode)lvWhenToWatch.SelectedItems[0].Tag;
+        ProcessedEpisode ei = (ProcessedEpisode)lvWhenToWatch.SelectedItems[0].Tag!;
         List<FileInfo> fl = FinderHelper.FindEpOnDisk(null, ei);
         if (fl.Any())
         {
@@ -1888,7 +1888,7 @@ public partial class UI : Form, IDialogParent
         {
             lvi.Selected = false;
 
-            ProcessedEpisode ei = (ProcessedEpisode)lvi.Tag;
+            ProcessedEpisode ei = (ProcessedEpisode)lvi.Tag!;
             DateTime? dt2 = ei.GetAirDateDt();
             if (dt2 != null)
             {
@@ -1956,7 +1956,7 @@ public partial class UI : Form, IDialogParent
     {
         foreach (ListViewItem lvi in lvWhenToWatch.SelectedItems)
         {
-            TVDoc.SearchForEpisode((ProcessedEpisode)lvi.Tag);
+            TVDoc.SearchForEpisode((ProcessedEpisode)lvi.Tag!);
         }
     }
 
@@ -4272,9 +4272,9 @@ public partial class UI : Form, IDialogParent
         // MAH: move the "Clear" button in the Filter Text Box
         if (tb.Controls.ContainsKey("Clear"))
         {
-            Control filterButton = tb.Controls["Clear"];
+            Control? filterButton = tb.Controls["Clear"];
             int clientSizeHeight = (tb.ClientSize.Height - 16) / 2;
-            filterButton.Location = new Point(tb.ClientSize.Width - filterButton.Width, clientSizeHeight + 1);
+            filterButton!.Location = new Point(tb.ClientSize.Width - filterButton.Width, clientSizeHeight + 1);
 
             UiHelpers.StopTextDisappearing(tb, filterButton);
         }
@@ -4744,14 +4744,14 @@ public partial class UI : Form, IDialogParent
 
         int dd = TVSettings.Instance.WTWRecentDays;
 
-        lvWhenToWatch.Groups["justPassed"].Header =
+        lvWhenToWatch.Groups["justPassed"]!.Header =
             "Aired in the last " + dd + " day" + (dd == 1 ? "" : "s");
 
         // try to maintain selections if we can
         List<ProcessedEpisode> selections = [];
         foreach (ListViewItem lvi in lvWhenToWatch.SelectedItems)
         {
-            selections.Add((ProcessedEpisode)lvi.Tag);
+            selections.Add((ProcessedEpisode)lvi.Tag!);
         }
 
         ProcessedSeason? currentSeas = TreeNodeToSeason(MyShowTree.SelectedNode);
@@ -4891,7 +4891,7 @@ public partial class UI : Form, IDialogParent
 
         ToolStripButton button = (ToolStripButton)sender;
 
-        Point pt = button.Owner.PointToScreen(button.Bounds.Location);
+        Point pt = button.Owner!.PointToScreen(button.Bounds.Location);
         List<ProcessedEpisode> eis = [.. lvWhenToWatch
             .SelectedItems
             .Cast<ListViewItem>()
@@ -4904,7 +4904,7 @@ public partial class UI : Form, IDialogParent
     private void TsbMyShowsContextMenu_Click(object sender, EventArgs e)
     {
         ToolStripButton button = (ToolStripButton)sender;
-        Point pt = button.Owner.PointToScreen(button.Bounds.Location);
+        Point pt = button.Owner!.PointToScreen(button.Bounds.Location);
 
         TreeNode n = MyShowTree.SelectedNode;
 
@@ -4929,7 +4929,7 @@ public partial class UI : Form, IDialogParent
     private void TsbScanContextMenu_Click(object sender, EventArgs e)
     {
         ToolStripButton button = (ToolStripButton)sender;
-        Point pt = button.Owner.PointToScreen(button.Bounds.Location);
+        Point pt = button.Owner!.PointToScreen(button.Bounds.Location);
         GenerateActionshowRightClickMenu(pt);
     }
 
@@ -4968,7 +4968,7 @@ public partial class UI : Form, IDialogParent
         {
             foreach (ListViewItem lvi in lvWhenToWatch.SelectedItems)
             {
-                JackettFinder.SearchForEpisode((ProcessedEpisode)lvi.Tag);
+                JackettFinder.SearchForEpisode((ProcessedEpisode)lvi.Tag!);
             }
         }
     }
@@ -5077,7 +5077,7 @@ public partial class UI : Form, IDialogParent
     private void tsbMyMoviesContextMenu_Click(object sender, EventArgs e)
     {
         ToolStripButton button = (ToolStripButton)sender;
-        Point pt = button.Owner.PointToScreen(button.Bounds.Location);
+        Point pt = button.Owner!.PointToScreen(button.Bounds.Location);
 
         TreeNode n = movieTree.SelectedNode;
 

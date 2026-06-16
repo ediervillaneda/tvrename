@@ -476,7 +476,7 @@ public partial class Preferences : Form
         s.DefShowDVDOrder = cbDefShowDVDOrder.Checked;
         s.DefShowAlternateOrder = cbDefShowAlternateOrder.Checked;
         s.DefShowAutoFolders = cbDefShowAutoFolders.Checked;
-        s.DefShowLocation = (string)cmbDefShowLocation.SelectedItem;
+        s.DefShowLocation = (string)cmbDefShowLocation.SelectedItem!;
         s.DefaultShowTimezoneName = cbTimeZone.Text;
         s.DefShowSequentialMatching = cbDefShowSequentialMatching.Checked;
         s.DefShowAirDateMatching = cbDefShowAirdateMatching.Checked;
@@ -492,7 +492,7 @@ public partial class Preferences : Form
         s.DefMovieCheckNoDatedMovies = cbDefMovieIncludeNoAirdate.Checked;
         s.DefMovieUseAutomaticFolders = cbDefMovieAutoFolders.Checked;
         s.DefMovieUseDefaultLocation = cbDefMovieUseDefLocation.Checked;
-        s.DefMovieDefaultLocation = (string)cmbDefMovieLocation.SelectedItem;
+        s.DefMovieDefaultLocation = (string?)cmbDefMovieLocation.SelectedItem;
         s.DefaultMovieProvider = MovieProviderMode();
 
         s.TMDBLanguage = Languages.Instance.GetLanguageFromLocalName(cbTMDBLanguages.SelectedItem?.ToString()) ?? s.TMDBLanguage;
@@ -1332,13 +1332,13 @@ public partial class Preferences : Form
 
     private void UpdateDefShowLocation()
     {
-        string oldValue = (string)cmbDefShowLocation.SelectedItem;
+        string? oldValue = (string?)cmbDefShowLocation.SelectedItem;
         PopulateAndSetDefShowLocation(oldValue);
     }
 
     private void UpdateDefMovieLocation()
     {
-        string oldValue = (string)cmbDefMovieLocation.SelectedItem;
+        string? oldValue = (string?)cmbDefMovieLocation.SelectedItem;
         PopulateAndSetDefMovieLocation(oldValue);
     }
 
@@ -1624,7 +1624,7 @@ public partial class Preferences : Form
                 return;
             }
 
-            ListViewItem item = lvwDefinedColors.FindItemWithText(ssct.Text);
+            ListViewItem? item = lvwDefinedColors.FindItemWithText(ssct.Text);
             if (item is null)
             {
                 item = new ListViewItem();
@@ -1908,8 +1908,8 @@ public partial class Preferences : Form
     {
         if (e.Data is not null)
         {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            foreach (string path in files)
+            string[]? files = (string[]?)e.Data.GetData(DataFormats.FileDrop);
+            foreach (string path in files ?? [])
             {
                 try
                 {
@@ -2027,8 +2027,8 @@ public partial class Preferences : Form
     {
         if (e.Data is not null)
         {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            foreach (string path in files)
+            string[]? files = (string[]?)e.Data.GetData(DataFormats.FileDrop);
+            foreach (string path in files ?? [])
             {
                 try
                 {
@@ -2053,8 +2053,8 @@ public partial class Preferences : Form
     {
         if (e.Data is not null)
         {
-            string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
-            foreach (string path in files)
+            string[]? files = (string[]?)e.Data.GetData(DataFormats.FileDrop);
+            foreach (string path in files ?? [])
             {
                 try
                 {
