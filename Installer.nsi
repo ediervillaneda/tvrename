@@ -4,7 +4,6 @@ SetCompressor /solid lzma
 
 !include "MUI.nsh"
 !include "FileFunc.nsh"
-!include "DotNetChecker.nsh" ; https://github.com/ReVolly/NsisDotNetChecker
 
 !define APPNAME "TV Rename"
 
@@ -48,58 +47,63 @@ Var STARTMENU_FOLDER
 
 !insertmacro MUI_LANGUAGE "English"
 
+; Check for .NET 8 Desktop Runtime
+!macro CheckDotNet8
+    ReadRegStr $0 HKLM "SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedfx\Microsoft.WindowsDesktop.App" "8.0"
+    StrCmp $0 "" 0 dotnet8_found
+    ; Try enumerating installed 8.x versions
+    StrCpy $1 0
+    dotnet8_loop:
+        EnumRegValue $2 HKLM "SOFTWARE\dotnet\Setup\InstalledVersions\x64\sharedfx\Microsoft.WindowsDesktop.App" $1
+        StrCmp $2 "" dotnet8_missing
+        StrCpy $3 $2 1   ; first char of version string
+        StrCmp $3 "8" dotnet8_found
+        IntOp $1 $1 + 1
+        Goto dotnet8_loop
+    dotnet8_missing:
+        MessageBox MB_YESNO|MB_ICONEXCLAMATION \
+            "TV Rename requires .NET 8 Desktop Runtime which does not appear to be installed.$\n$\nDownload it from https://dotnet.microsoft.com/download/dotnet/8.0$\n$\nContinue installation anyway?" \
+            IDYES dotnet8_found
+        Abort
+    dotnet8_found:
+!macroend
+
 Section "Install"
     SetOutPath "$INSTDIR"
 
-    !insertmacro CheckNetFramework 48
+    !insertmacro CheckDotNet8
 
     Delete "$INSTDIR\Ionic.Utils.Zip.dll" ; Remove old dependency
 
-    File "TVRename\bin\Release\net6.0-windows\TVRename.exe"
-    File "TVRename\bin\Release\net6.0-windows\*.dll"
-    File "TVRename\bin\Release\net6.0-windows\*.json"
-    File "TVRename\bin\Release\net6.0-windows\TVRename.dll.config"
-    
-    File "TVRename\bin\Release\net6.0-windows\NLog.config"
+    ; Main application files
+    File "TVRename\bin\x64\Release\net8.0-windows\TVRename.exe"
+    File "TVRename\bin\x64\Release\net8.0-windows\TVRename.dll"
+    File "TVRename\bin\x64\Release\net8.0-windows\TVRename.runtimeconfig.json"
+    File "TVRename\bin\x64\Release\net8.0-windows\TVRename.deps.json"
+    File "TVRename\bin\x64\Release\net8.0-windows\TVRename.dll.config"
+    File "TVRename\bin\x64\Release\net8.0-windows\NLog.config"
+    File "TVRename\bin\x64\Release\net8.0-windows\*.dll"
+    File "TVRename\bin\x64\Release\net8.0-windows\*.json"
 
     WriteUninstaller "$INSTDIR\Uninstall.exe"
 
-    SetOutPath "$INSTDIR\runtimes\win\lib\net6.0"
-    File "TVRename\bin\Release\net6.0-windows\runtimes\win\lib\net6.0\*.dll"
-    SetOutPath "$INSTDIR\runtimes\win\lib\netcoreapp2.1"
-    File "TVRename\bin\Release\net6.0-windows\runtimes\win\lib\netcoreapp2.1\*.dll"
-    
-    SetOutPath "$INSTDIR\runtimes\win-x64\lib\netcoreapp3.1"
-    File "TVRename\bin\Release\net6.0-windows\runtimes\win-x64\lib\netcoreapp3.1\*.dll"
-    
+    ; Managed CefSharp DLLs (x64)
+    SetOutPath "$INSTDIR\x64"
+    File "TVRename\bin\x64\Release\net8.0-windows\x64\*.dll"
+
+    ; CEF native binaries
     SetOutPath "$INSTDIR\runtimes\win-x64\native"
-    File "TVRename\bin\Release\net6.0-windows\runtimes\win-x64\native\*.dll"
-    File "TVRename\bin\Release\net6.0-windows\runtimes\win-x64\native\*.exe"
-    File "TVRename\bin\Release\net6.0-windows\runtimes\win-x64\native\*.json"
-    File /r TVRename\packages\cef.redist.x64\106.0.29\CEF\*.dll
-    File /r TVRename\packages\cef.redist.x64\106.0.29\CEF\*.pak
-    File /r TVRename\packages\cef.redist.x64\106.0.29\CEF\*.bin
-    File /r TVRename\packages\cef.redist.x64\106.0.29\CEF\*.dat
-    File /r TVRename\packages\cef.redist.x64\106.0.29\CEF\*.json
+    File "TVRename\bin\x64\Release\net8.0-windows\runtimes\win-x64\native\*.dll"
+    File "TVRename\bin\x64\Release\net8.0-windows\runtimes\win-x64\native\*.exe"
+    File "TVRename\bin\x64\Release\net8.0-windows\runtimes\win-x64\native\*.json"
+    File "TVRename\bin\x64\Release\net8.0-windows\runtimes\win-x64\native\*.dat"
+    File "TVRename\bin\x64\Release\net8.0-windows\runtimes\win-x64\native\*.pak"
+    File "TVRename\bin\x64\Release\net8.0-windows\runtimes\win-x64\native\*.bin"
 
     SetOutPath "$INSTDIR\runtimes\win-x64\native\locales"
-    File "TVRename\bin\Release\net6.0-windows\runtimes\win-x64\native\locales\*.pak"
-    
-    SetOutPath "$INSTDIR\runtimes\win-x86\lib\netcoreapp3.1"
-    File "TVRename\bin\Release\net6.0-windows\runtimes\win-x86\lib\netcoreapp3.1\*.dll"
+    File "TVRename\bin\x64\Release\net8.0-windows\runtimes\win-x64\native\locales\*.pak"
 
-    SetOutPath "$INSTDIR\runtimes\win-x86\native"
-    File "TVRename\bin\Release\net6.0-windows\runtimes\win-x86\native\*.dll"
-    File "TVRename\bin\Release\net6.0-windows\runtimes\win-x86\native\*.exe"
-    File "TVRename\bin\Release\net6.0-windows\runtimes\win-x86\native\*.json"
-    File /r TVRename\packages\cef.redist.x86\106.0.29\CEF\*.dll
-    File /r TVRename\packages\cef.redist.x86\106.0.29\CEF\*.pak
-    File /r TVRename\packages\cef.redist.x86\106.0.29\CEF\*.bin
-    File /r TVRename\packages\cef.redist.x86\106.0.29\CEF\*.dat
-    File /r TVRename\packages\cef.redist.x86\106.0.29\CEF\*.json
-    
-    SetOutPath "$INSTDIR\runtimes\win-x86\native\locales"
-    File "TVRename\bin\Release\net6.0-windows\runtimes\win-x86\native\locales\*.pak"
+    SetOutPath "$INSTDIR"
 
     !insertmacro MUI_STARTMENU_WRITE_BEGIN Application
     CreateDirectory "$SMPROGRAMS\$STARTMENU_FOLDER"
@@ -115,7 +119,7 @@ Section "Install"
     WriteRegStr HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\TVRename" "UninstallString" "$INSTDIR\Uninstall.exe"
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\TVRename" "NoModify" 1
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\TVRename" "NoRepair" 1
-    
+
     ${GetSize} "$INSTDIR" "/S=0K" $0 $1 $2
     IntFmt $0 "0x%08X" $0
     WriteRegDWORD HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\TVRename" "EstimatedSize" "$0"
@@ -124,20 +128,21 @@ SectionEnd
 
 Section "Uninstall"
     Delete "$INSTDIR\TVRename.exe"
+    Delete "$INSTDIR\TVRename.dll"
     Delete "$INSTDIR\*.dll"
-    
+    Delete "$INSTDIR\*.json"
+
     Delete "$INSTDIR\NLog.config"
-    Delete "$INSTDIR\TVRename.exe.config"
+    Delete "$INSTDIR\TVRename.dll.config"
     Delete "$INSTDIR\debug.log"
 
     Delete "$INSTDIR\Uninstall.exe"
 
     RmDir /r "$INSTDIR\x64"
-    RmDir /r "$INSTDIR\x86"
     RmDir /r "$INSTDIR\runtimes"
-    
+
     RmDir "$INSTDIR"
-    
+
     !insertmacro MUI_STARTMENU_GETFOLDER Application $STARTMENU_FOLDER
     Delete "$SMPROGRAMS\$STARTMENU_FOLDER\${APPNAME}.lnk"
     Delete "$SMPROGRAMS\$STARTMENU_FOLDER\${APPNAME} (Recover).lnk"
