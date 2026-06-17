@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
-    <CefSharpAnyCpuSupport>true</CefSharpAnyCpuSupport>
+    <PlatformTarget>x64</PlatformTarget>
     <OutputType>WinExe</OutputType>
     <ApplicationIcon>App\app.ico</ApplicationIcon>
     <IsWebBootstrapper>false</IsWebBootstrapper>
@@ -28,19 +28,19 @@
     <UseWPF>true</UseWPF>
     <ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <WarningLevel>5</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>Latest</LangVersion>
     <WarningsAsErrors>Nullable</WarningsAsErrors>
-    <NoWarn>CA1416;NU1701;NU1504</NoWarn>
+    <NoWarn>CA1416;NU1701</NoWarn>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <WarningLevel>1</WarningLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>Latest</LangVersion>
     <WarningsAsErrors>Nullable</WarningsAsErrors>
-    <NoWarn>1701;1702;CA1416;NU1701;NU1504</NoWarn>
+    <NoWarn>1701;1702;CA1416;NU1701</NoWarn>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject>TVRename.App.Program</StartupObject>
@@ -171,37 +171,4 @@
       <SubType>Designer</SubType>
     </EmbeddedResource>
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="chromiumembeddedframework.runtime.win-x64" Version="148.0.9" />
-    <PackageReference Update="chromiumembeddedframework.runtime.win-arm64" Version="148.0.9" />
-    <PackageReference Update="chromiumembeddedframework.runtime.win-x86" Version="148.0.9" />
-  </ItemGroup>
-
-  <!--
-    Fix CefSharp AnyCPU:
-    1. Copy managed CefSharp assemblies to x64\ so the AssemblyResolve handler in Program.cs finds them.
-    2. Call CefRedist64CopyResources (defined in chromiumembeddedframework.runtime.win-x64's props)
-       to copy libcef.dll, chrome_elf.dll, d3dcompiler_47.dll etc. to the output root.
-       Without this, Windows cannot find the native modules when CefSharp.Core.Runtime.dll is loaded.
-  -->
-  <Target Name="CefSharpAnyCpuFix" AfterTargets="Build" Condition="'$(RuntimeIdentifier)' == ''">
-    <ItemGroup>
-      <_CefManagedX64 Include="$(OutDir)runtimes\win-x64\lib\net6.0\*" />
-      <_CefManagedX64 Include="$(OutDir)runtimes\win-x64\lib\netcoreapp3.1\*" />
-      <!-- BrowserSubprocess must be in the app root so Debug mode (no SetArchitecturePaths) can find it -->
-      <_CefSubprocess Include="$(OutDir)runtimes\win-x64\native\CefSharp.BrowserSubprocess.*" />
-    </ItemGroup>
-    <MakeDir Directories="$(OutDir)x64" />
-    <Copy SourceFiles="@(_CefManagedX64)" DestinationFolder="$(OutDir)x64" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="@(_CefSubprocess)" DestinationFolder="$(OutDir)" SkipUnchangedFiles="true" />
-    <CallTarget Targets="CefRedist64CopyResources" />
-    <!--
-      .NET 8 resolves CefSharp.Core.Runtime.dll from runtimes/win-x64/lib/net6.0/ via its built-in
-      RID prober, bypassing the AppDomain.AssemblyResolve handler. When loaded from that path, Windows
-      cannot find libcef.dll (it's in the app root, not in that subdirectory). Remove the file so
-      .NET 8's prober fails → AssemblyResolve fires → loads from x64\ → libcef.dll found in app root.
-    -->
-    <Delete Files="$(OutDir)runtimes\win-x64\lib\net6.0\CefSharp.Core.Runtime.dll" />
-    <Delete Files="$(OutDir)runtimes\win-x64\lib\netcoreapp3.1\CefSharp.Core.Runtime.dll" />
-  </Target>
 </Project>

@@ -66,7 +66,7 @@ public class CefWrapper
             Logger.Warn("If C++ 2019 is not installed visit: https://docs.microsoft.com/en-us/cpp/windows/latest-supported-vc-redist?view=msvc-160 and install the latest appropriate version");
 
             MessageBox.Show("TV Rename needs Microsoft Visual C++ 2015-2019 Redistributable to be present. Downloading installer now.", "Missing Dependencies");
-            string urlToDownload = Environment.Is64BitProcess ? "vc_redist.x64.exe" : "vc_redist.x86.exe";
+            string urlToDownload = "vc_redist.x64.exe";
             $"https://aka.ms/vs/17/release/{urlToDownload}".OpenUrlInBrowser();
         }
         CheckForBrowserDependencies(false);
@@ -80,9 +80,8 @@ public class CefWrapper
     private void SetArchitecturePaths(CefSettings settings)
     {
         architectureSpecificBrowserPath = Path.Combine(
-            AppDomain.CurrentDomain.SetupInformation.ApplicationBase, "runtimes",
-            "win-" + (Environment.Is64BitProcess ? "x64" : "x86"), "native",
-            "CefSharp.BrowserSubprocess.exe");
+            AppDomain.CurrentDomain.SetupInformation.ApplicationBase,
+            "runtimes", "win-x64", "native", "CefSharp.BrowserSubprocess.exe");
 
         if (File.Exists(architectureSpecificBrowserPath))
         {
@@ -95,9 +94,8 @@ public class CefWrapper
         }
 
         architectureSpecificLocalesDirPath = Path.Combine(
-            AppDomain.CurrentDomain.SetupInformation.ApplicationBase, "runtimes",
-            "win-" + (Environment.Is64BitProcess ? "x64" : "x86"), "native",
-            "locales");
+            AppDomain.CurrentDomain.SetupInformation.ApplicationBase,
+            "runtimes", "win-x64", "native", "locales");
 
         if (Directory.Exists(architectureSpecificLocalesDirPath))
         {
@@ -110,8 +108,8 @@ public class CefWrapper
         }
 
         architectureSpecificResourcesDirPath = Path.Combine(
-            AppDomain.CurrentDomain.SetupInformation.ApplicationBase, "runtimes",
-            "win-" + (Environment.Is64BitProcess ? "x64" : "x86"), "native");
+            AppDomain.CurrentDomain.SetupInformation.ApplicationBase,
+            "runtimes", "win-x64", "native");
 
         if (Directory.Exists(architectureSpecificResourcesDirPath))
         {
